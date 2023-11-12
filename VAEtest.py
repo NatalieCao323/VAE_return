@@ -111,16 +111,22 @@ inputs = inputs.astype('float32')
 batch_size = 32
 train_dataset = tf.data.Dataset.from_tensor_slices(inputs).batch(batch_size).prefetch(tf.data.AUTOTUNE)
 
-# Train the VAE
-train_vae(vae, train_dataset, epochs=50)
+# Implement early stopping
+early_stopping = tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10)
 
 # Explicitly build the model
-vae.build(input_shape)
+vae.build(input_shape=(None, 60))
 # Create a dummy input batch with the correct shape
-# Save the model after training
+# Assuming your input data shape is (60,), create a dummy batch with shape (1, 60)
+dummy_input = tf.random.normal([1, 60])
+
+# Call the model on the dummy input to build it
+_ = vae(dummy_input)
+
+# Now try saving the model
 model_save_path = "/Users/caoqt1/Desktop/Research/VAE/my_vae_model"
-os.makedirs(os.path.dirname(model_save_path), exist_ok=True)
 vae.save(model_save_path)
+
 
 # Generate data
 def generate_stock_returns(model, n_samples=10):
